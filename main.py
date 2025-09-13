@@ -3,24 +3,35 @@
 # ================
 
 import time
+import random
 
 # ======================
 # IMPORT CHARACTER CLASS
 # ======================
 
-from character import Tank, Dragon
+from character import Tank, Swordsman, Wizard, Elf, Dragon
 
 # ===================
 # INSTANTIATING CLASS
 # ===================
 
-tank = Tank("Sir Tanksalot")
 dragon = Dragon("Draggin Yaface")
-
 
 # ===========
 # START GAME?
 # ===========
+
+
+def main():
+    display_menu()
+    choice = choose_action()
+
+    if choice == "s":
+        start_intro()
+        battle(party, dragon)
+    elif choice == "q":
+        print("Exiting...")
+
 
 def display_menu():
     intro = [
@@ -62,77 +73,116 @@ def choose_action():
 
 def start_intro():
     intro = [
-        "The ground trembles.",
-        "The dragon descends, fiery breath scorching the sky.",
-        "The tank steps forward, armor gleaming with unyielding steel.",
-        "Shield raised, heart pounding with battle fury.",
-        "Eye to eye with the beast—no retreat, no fear.",
-        "Iron will clashes with blazing fury.",
-        "Only one will stand victorious.",
+        "Flames lick the sky as the dragon's roar shatters the silence.",
+        "Sir Tanksalot plants his shield like a fortress, unyielding and resolute.",
+        "Stabby McStabface tightens his grip, blades gleaming for the deadly dance.",
+        "Spellbert Einstein murmurs incantations, weaving glowing shields and lightning speed.",
+        "Florence NightingElf moves like a whisper, ready to mend wounds and steady hearts.",
+        "Together they stand, a wall of iron, steel, magic, and hope against the beast.",
+        "No fear, no falter — only the fierce will to survive the fiery storm.",
     ]
 
     for line in intro:
         print(line)
         print("=" * len(line))
+        time.sleep(1)
+
+
+party = [Tank("Sir Tanksalot"), Swordsman("Stabby McStabface"),
+         Wizard("Spellbert Einstein"), Elf("Florence NightingElf")]
+
+
+def battle(party, dragon):
+    turn_index = 0  # start with the first hero
+
+    while any(hero.get_hp() for hero in party) and dragon.get_hp() > 0:
+        current_hero = party[turn_index]
+
+        if current_hero.get_hp() > 0:
+            print(f"{current_hero.name}'s Turn".center(100))
+            print("[A]ttack [D]efend".center(100))
+
+            # if ELF
+            if isinstance(current_hero, Elf):
+                print("[H]eal".center(100))
+
+            # if WIZARD
+            if isinstance(current_hero, Wizard):
+                print("[B]uff".center(100))
+
+            choice = input("> ").strip().lower()
+
+            if choice == "a":
+                damage = max(0, current_hero.get_atk_power() -
+                             dragon.get_defence_str() // 10)
+                dragon.hp -= damage
+                print(
+                    f"\n{current_hero.name} attacks {dragon.name} with {damage} damage!\n")
+
+            elif choice == "d":
+                block = current_hero.do_defend()
+                print(
+                    f"\n{current_hero.name} prepares to block {block} damage\n")
+                current_hero.defending = True
+
+            elif choice == "h" and isinstance(current_hero, Elf):
+                # FULL PARTY HEAL
+                print(
+                    f"\n{current_hero.name} casts a healing spell on the whole party!\n")
+
+                for ally in party:
+                    if ally.get_hp() > 0:  # skip dead heroes
+                        heal_amt = current_hero.do_heal()
+                        ally.hp += heal_amt
+                        print(
+                            f"{ally.name} heals for {heal_amt}! (HP: {ally.get_hp()})")
+
+            elif choice == "b" and isinstance(current_hero, Wizard):
+                # FULL PARTY ATK BUFF
+                print(f"{current_hero.name} casts a powerful buff on the party!")
+
+                for ally in party:
+                    if ally.get_hp() > 0:  # only buff living heroes
+                        buff_amt = current_hero.do_buff()
+                        ally.atk_power += buff_amt
+                        print(
+                            f"{ally.name}'s attack power increased by {buff_amt}! (ATK: {ally.get_atk_power()})")
+            else:
+                print(f"{current_hero.name} missed their opportunity")
+
+        time.sleep(0.5)
+
+        # === CHECK DRAGON STATE
+        if dragon.get_hp() <= 0:
+            print(f"The heroes won and slain {dragon.name}")
+            break
+
+        # === DRAGON TURN
+        if turn_index == len(party) - 1:
+            print(f"{dragon.name}'s Turn".center(100))
+            target = random.choice(
+                [hero for hero in party if hero.get_hp() > 0])
+
+            block_pwr = target.do_defend() if getattr(target, "defending", False) else 0
+
+            raw_damage = max(0, dragon.get_atk_power() -
+                             target.get_defence_str() // 10)
+            damage = max(0, raw_damage - block_pwr)
+
+            target.hp -= raw_damage
+
+            print(
+                f"\n{dragon.name} attacks {target.name} for {raw_damage} damage!\n")
+
+            if not any(hero.get_hp() > 0 for hero in party):
+                print("The party has been wiped out...")
+                break
+
+        # Move to next hero turn
+        current_hero.show_stats()
+        print(f"Dragon HP: {dragon.get_hp()}")
+        turn_index = (turn_index + 1) % len(party)
         time.sleep(0.5)
 
 
-def start_battle(tank, dragon):
-    while tank.get_hp() > 0 and dragon.get_hp() > 0:
-        # === player input
-        moves = [
-            "YOUR MOVE",
-            "[A]ttack",
-            "[D]efend",
-            "[H]eal",
-        ]
-
-        for line in moves:
-            print(line)
-            time.sleep(0.5)
-
-        choice = input("> ").strip().lower()
-
-        if choice == "a":
-            # tank attack
-            damage = max(0, tank.get_atk_power() -
-                         dragon.get_defence_str() // 10)
-            dragon.hp -= damage
-            print(f"{tank.name} attacks {dragon.name} with {damage} damage!\n")
-
-        elif choice == "d":
-            # === tank defend
-            block_pwr = tank.do_defend()
-            print(f"{tank.name} blocks {block_pwr} damage from {dragon.name}\n")
-
-        elif choice == "h":
-            # === tank heals
-            heal_got = tank.do_heal()
-            tank.hp = tank.get_hp() + heal_got
-            print(f"{tank.name} healed {heal_got}. Health: {tank.get_hp()}\n")
-
-        print(f"Dragon Health: {dragon.get_hp()}\n")
-        time.sleep(1)
-
-        # === Check dragon state
-        if dragon.get_hp() <= 0:
-            print(f"{tank.name} wins!\n")
-            break
-
-        # === Dragon Turn ===
-        raw_damage = max(0, dragon.get_atk_power() -
-                         tank.get_defence_str() // 10)
-        damage = max(0, raw_damage - (block_pwr if choice == "d" else 0))
-
-        tank.hp -= damage
-        print(f"{dragon.name} attacks {tank.name} with {damage} damage!\n")
-        print(f"Tank Health: {tank.get_hp()}\n")
-        time.sleep(1)
-
-        # === check tank state
-        if tank.get_hp() <= 0:
-            print(f"{tank.name} lost...\n")
-            break
-
-
-start_battle(tank, dragon)
+main()

@@ -4,7 +4,7 @@ import random
 class Character:
     def __init__(self, name):
         self.name = name
-        self.hp = 5000
+        self.hp = 10000
         self.atk_power = 1000
         self.defence_str = 1000
         self.crt_chance = random.choices([1, 2.5, 5, 7.5, 12], weights=[
@@ -22,12 +22,6 @@ class Character:
     def do_defend(self):
         block = int(self.defence_str // 7)
         return block
-
-    def do_heal(self):
-        possible_heals = [250, 500, 750, 1000, 2000, 7000]
-        heal_amt = random.choices(possible_heals, weights=[
-                                  60, 50, 40, 30, 20, 18], k=1)[0]
-        return heal_amt
 
     def show_stats(self):
         print(f"{self.__class__.__name__} - {self.name}")
@@ -63,6 +57,12 @@ class Wizard(Character):
 
         self.atk_power = int(self.atk_power * 1.25)
 
+    def do_buff(self):
+        possible_atk_inc = [500, 1000, 1250, 1500, 2000]
+        atk_buff = random.choices(possible_atk_inc, weights=[
+                                  120, 100, 80, 60, 40], k=1)[0]
+        return atk_buff
+
 
 # Healer
 class Elf(Character):
@@ -71,6 +71,12 @@ class Elf(Character):
 
         self.hp = int(self.hp * 1.25)
         self.defence_str = int(self.defence_str * 0.5)
+
+    def do_heal(self):
+        possible_heals = [250, 500, 750, 1000, 2000, 7000]
+        heal_amt = random.choices(possible_heals, weights=[
+                                  60, 50, 40, 30, 20, 18], k=1)[0]
+        return heal_amt
 
 
 # Enemy
