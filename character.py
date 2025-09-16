@@ -84,8 +84,8 @@ class Dragon(Character):
     def __init__(self, name):
         super().__init__(name)
 
-        self.hp = int(self.hp * 5)
-        self.atk_power = int(self.atk_power * 5)
+        self.hp = int(self.hp * 10)
+        self.atk_power = int(self.atk_power * 7)
         self.defence_str = int(self.defence_str * 3)
 
 
