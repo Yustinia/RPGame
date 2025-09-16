@@ -8,7 +8,7 @@ class Character:
         self.atk_power = 1000
         self.defence_str = 1000
         self.crt_chance = random.choices([1, 2.5, 5, 7.5, 12], weights=[
-                                         100, 80, 75, 70, 60], k=1)[0]
+                                         100, 80, 40, 30, 10], k=1)[0]
 
     def get_hp(self):
         return self.hp
@@ -46,7 +46,7 @@ class Swordsman(Character):
         super().__init__(name)
 
         self.hp = int(self.hp * 0.75)
-        self.atk_power = int(self.atk_power * 2)
+        self.atk_power = int((self.atk_power * self.crt_chance) * 2)
         self.defence_str = int(self.defence_str * 0.75)
 
 
@@ -55,7 +55,7 @@ class Wizard(Character):
     def __init__(self, name):
         super().__init__(name)
 
-        self.atk_power = int(self.atk_power * 1.25)
+        self.atk_power = int((self.atk_power * self.crt_chance) * 1.25)
 
     def do_buff(self):
         possible_atk_inc = [500, 1000, 1250, 1500, 2000]
@@ -69,6 +69,7 @@ class Elf(Character):
     def __init__(self, name):
         super().__init__(name)
 
+        self.atk_power = int(self.atk_power * self.crt_chance)
         self.hp = int(self.hp * 1.25)
         self.defence_str = int(self.defence_str * 0.5)
 
@@ -85,8 +86,8 @@ class Dragon(Character):
         super().__init__(name)
 
         self.hp = int(self.hp * 10)
-        self.atk_power = int(self.atk_power * 7)
-        self.defence_str = int(self.defence_str * 3)
+        self.atk_power = int((self.atk_power * self.crt_chance) * 7)
+        self.defence_str = int(self.defence_str * 20)
 
 
 # tank = Tank("Sir Tanksalot")
